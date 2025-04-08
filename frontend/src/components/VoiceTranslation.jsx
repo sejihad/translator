@@ -1,5 +1,8 @@
+import axios from "axios";
 import React, { useState } from "react";
-const API_URL = "https://your-backend-url.vercel.app"; // Vercel backend URL
+
+// API URL
+const API_URL = "https://translator-api-eight.vercel.app"; // আপনার সার্ভারের URL এখানে ব্যবহার করুন
 
 function VoiceTranslation() {
   const [transcribedText, setTranscribedText] = useState("");
@@ -23,14 +26,9 @@ function VoiceTranslation() {
   // Translate Bengali to English
   const translateText = async (text) => {
     try {
-      const res = await fetch(`${API_URL}/translate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
-      });
-      const data = await res.json();
-      setTranslatedText(data.translatedText);
-      await getSpeechAudio(data.translatedText);
+      const response = await axios.post(`${API_URL}/translate`, { text });
+      setTranslatedText(response.data.translatedText);
+      await getSpeechAudio(response.data.translatedText);
     } catch (error) {
       console.error("Translation error:", error);
     }
@@ -39,14 +37,15 @@ function VoiceTranslation() {
   // Get English speech from text
   const getSpeechAudio = async (text) => {
     try {
-      const res = await fetch(`${API_URL}/tts`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
-      });
-
-      const audioBlob = await res.blob(); // Get the audio as a blob
-      const audioUrl = URL.createObjectURL(audioBlob); // Create a URL for the blob
+      const response = await axios.post(
+        `${API_URL}/tts`,
+        { text },
+        {
+          responseType: "arraybuffer",
+        }
+      );
+      const audioBlob = new Blob([response.data], { type: "audio/mp3" });
+      const audioUrl = URL.createObjectURL(audioBlob);
       setAudioUrl(audioUrl);
     } catch (error) {
       console.error("TTS error:", error);
@@ -67,7 +66,7 @@ function VoiceTranslation() {
       </button>
       {transcribedText && <p>বাংলা: {transcribedText}</p>}
       {translatedText && <p>ইংরেজি: {translatedText}</p>}
-      {audioUrl && (
+      {translatedText && (
         <button onClick={playAudio} className="btn btn-success mt-3">
           🔊 শোনো
         </button>
