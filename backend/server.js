@@ -9,7 +9,9 @@ const port = 5000;
 
 app.use(cors());
 app.use(express.json());
-
+app.post("/", (req, res) => {
+  res.send("server is running");
+});
 // Google Speech-to-Text API setup
 const client = new speech.SpeechClient();
 
