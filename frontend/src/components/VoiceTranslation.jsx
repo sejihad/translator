@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-const API_URL = "https://translator-api-eight.vercel.app";
+const API_URL = "https://your-backend-url.vercel.app"; // Vercel backend URL
+
 function VoiceTranslation() {
   const [transcribedText, setTranscribedText] = useState("");
   const [translatedText, setTranslatedText] = useState("");
@@ -43,7 +44,10 @@ function VoiceTranslation() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text }),
       });
-      setAudioUrl(res.url);
+
+      const audioBlob = await res.blob(); // Get the audio as a blob
+      const audioUrl = URL.createObjectURL(audioBlob); // Create a URL for the blob
+      setAudioUrl(audioUrl);
     } catch (error) {
       console.error("TTS error:", error);
     }
@@ -63,7 +67,7 @@ function VoiceTranslation() {
       </button>
       {transcribedText && <p>বাংলা: {transcribedText}</p>}
       {translatedText && <p>ইংরেজি: {translatedText}</p>}
-      {translatedText && (
+      {audioUrl && (
         <button onClick={playAudio} className="btn btn-success mt-3">
           🔊 শোনো
         </button>
