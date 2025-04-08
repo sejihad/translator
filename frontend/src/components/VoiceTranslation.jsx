@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-
+const API_URL = "https://translator-api-eight.vercel.app";
 function VoiceTranslation() {
   const [transcribedText, setTranscribedText] = useState("");
   const [translatedText, setTranslatedText] = useState("");
@@ -22,7 +22,7 @@ function VoiceTranslation() {
   // Translate Bengali to English
   const translateText = async (text) => {
     try {
-      const res = await fetch("http://localhost:5000/translate", {
+      const res = await fetch(`${API_URL}/translate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text }),
@@ -38,7 +38,7 @@ function VoiceTranslation() {
   // Get English speech from text
   const getSpeechAudio = async (text) => {
     try {
-      const res = await fetch("http://localhost:5000/tts", {
+      const res = await fetch(`${API_URL}/tts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text }),
