@@ -1,68 +1,38 @@
-import speech from "@google-cloud/speech";
-import translate from "@vitalets/google-translate-api";
-import cors from "cors";
-import express from "express";
-import gTTS from "gtts";
+const express = require("express");
+const bodyParser = require("body-parser");
+const { TextToSpeechClient } = require("@google-cloud/text-to-speech");
+const fs = require("fs");
 
 const app = express();
-const port = 5000;
+app.use(bodyParser.json());
 
-app.use(cors());
-app.use(express.json());
-app.get("/", (req, res) => {
-  res.json("server is running");
-});
-// Google Speech-to-Text API setup
-const client = new speech.SpeechClient();
+const textToSpeechClient = new TextToSpeechClient();
 
-// Speech-to-Text endpoint
-app.post("/stt", async (req, res) => {
-  try {
-    const audio = req.body.audio; // Base64 Audio
-    const request = {
-      audio: { content: audio },
-      config: {
-        encoding: "LINEAR16",
-        sampleRateHertz: 16000,
-        languageCode: "bn-BD",
-      },
-    };
-
-    const [response] = await client.recognize(request);
-    const transcript = response.results
-      .map((result) => result.alternatives[0].transcript)
-      .join("\n");
-
-    res.json({ success: true, text: transcript });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-});
-
-// Translate from Bengali to English
 app.post("/translate", async (req, res) => {
   try {
-    const { text } = req.body;
-    const translated = await translate(text, { from: "bn", to: "en" });
-    res.json({ success: true, translatedText: translated.text });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-});
+    const { voiceInput } = req.body;
 
-// Text-to-Speech API
-app.post("/tts", async (req, res) => {
-  try {
-    const { text } = req.body;
-    const gtts = new gTTS(text, "en");
-    gtts.save("output.mp3", (err) => {
-      if (err)
-        return res.status(500).json({ success: false, message: err.message });
-      res.sendFile(__dirname + "/output.mp3");
+    // Step 1: Translate the voiceInput (dummy translation for now)
+    const translatedText = `Translated to English: ${voiceInput}`;
+
+    // Step 2: Convert translated text to speech (Google Text-to-Speech API)
+    const [ttsResponse] = await textToSpeechClient.synthesizeSpeech({
+      input: { text: translatedText },
+      voice: { languageCode: "en-US", ssmlGender: "NEUTRAL" },
+      audioConfig: { audioEncoding: "MP3" },
     });
+
+    const audioUrl = `data:audio/mp3;base64,${ttsResponse.audioContent.toString(
+      "base64"
+    )}`;
+
+    res.json({ translatedText, audioUrl });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error("Error:", error);
+    res.status(500).send("Error in translation process");
   }
 });
 
-app.listen(port, () => console.log(`Server running on port ${port}`));
+app.listen(5000, () => {
+  console.log("Server is running on http://localhost:5000");
+});
