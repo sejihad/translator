@@ -2,10 +2,10 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const { TextToSpeechClient } = require("@google-cloud/text-to-speech");
 const fs = require("fs");
-
+const cors = require("cors");
 const app = express();
 app.use(bodyParser.json());
-
+app.use(cors());
 const textToSpeechClient = new TextToSpeechClient();
 
 app.post("/translate", async (req, res) => {
