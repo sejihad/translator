@@ -1,76 +1,75 @@
-import axios from "axios";
-import React, { useEffect, useState } from "react";
-
-function App() {
-  const [isListening, setIsListening] = useState(false);
+import React, { useState } from "react";
+const API_URL = "https://translator-api-eight.vercel.app";
+function VoiceTranslation() {
+  const [transcribedText, setTranscribedText] = useState("");
   const [translatedText, setTranslatedText] = useState("");
-  const [audioOutput, setAudioOutput] = useState(null);
+  const [audioUrl, setAudioUrl] = useState("");
 
+  // Start voice recognition
   const startListening = () => {
-    setIsListening(true);
-
     const recognition = new (window.SpeechRecognition ||
       window.webkitSpeechRecognition)();
-    recognition.lang = "bn-BD"; // বাংলা ভাষা
-    recognition.interimResults = false;
-
-    recognition.onstart = () => {
-      console.log("Listening...");
-    };
+    recognition.lang = "bn-BD";
+    recognition.start();
 
     recognition.onresult = async (event) => {
-      const voiceInput = event.results[0][0].transcript;
-      console.log("Recognized voice input:", voiceInput);
-
-      try {
-        const response = await axios.post(
-          `https://translator-api-eight.vercel.app/translate`,
-          {
-            voiceInput,
-          }
-        );
-        setTranslatedText(response.data.translatedText);
-        setAudioOutput(response.data.audioUrl);
-
-        // Play the translated voice
-        const audio = new Audio(response.data.audioUrl);
-        audio.play();
-      } catch (error) {
-        console.error("Error in translation:", error);
-      }
+      const text = event.results[0][0].transcript;
+      setTranscribedText(text);
+      await translateText(text);
     };
-
-    recognition.start();
   };
 
-  const stopListening = () => {
-    setIsListening(false);
-    const recognition = new (window.SpeechRecognition ||
-      window.webkitSpeechRecognition)();
-    recognition.stop();
+  // Translate Bengali to English
+  const translateText = async (text) => {
+    try {
+      const res = await fetch(`${API_URL}/translate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+      const data = await res.json();
+      setTranslatedText(data.translatedText);
+      await getSpeechAudio(data.translatedText);
+    } catch (error) {
+      console.error("Translation error:", error);
+    }
   };
 
-  useEffect(() => {
-    if (!isListening) return;
+  // Get English speech from text
+  const getSpeechAudio = async (text) => {
+    try {
+      const res = await fetch(`${API_URL}/tts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+      setAudioUrl(res.url);
+    } catch (error) {
+      console.error("TTS error:", error);
+    }
+  };
 
-    const recognition = new (window.SpeechRecognition ||
-      window.webkitSpeechRecognition)();
-    recognition.lang = "bn-BD"; // বাংলা ভাষা
-    recognition.start();
-  }, [isListening]);
+  // Play audio
+  const playAudio = () => {
+    const audio = new Audio(audioUrl);
+    audio.play();
+  };
 
   return (
-    <div>
-      <h1>Voice Translator</h1>
-      {!isListening ? (
-        <button onClick={startListening}>Start Listening</button>
-      ) : (
-        <button onClick={stopListening}>Stop Listening</button>
+    <div className="container text-center mt-5">
+      <h2>বাংলা থেকে ইংরেজি ভয়েস ট্রান্সলেশন</h2>
+      <button onClick={startListening} className="btn btn-primary mt-3">
+        🎤 বলুন
+      </button>
+      {transcribedText && <p>বাংলা: {transcribedText}</p>}
+      {translatedText && <p>ইংরেজি: {translatedText}</p>}
+      {translatedText && (
+        <button onClick={playAudio} className="btn btn-success mt-3">
+          🔊 শোনো
+        </button>
       )}
-      <p>Recognized Text: {translatedText}</p>
-      {audioOutput && <audio controls src={audioOutput} />}
     </div>
   );
 }
 
-export default App;
+export default VoiceTranslation;
