@@ -1,6 +1,6 @@
 // App.jsx
 import { useState } from "react";
-const API_URL = "";
+const API_URL = "https://translator-api-nine.vercel.app";
 function App() {
   const [banglaText, setBanglaText] = useState("");
   const [englishText, setEnglishText] = useState("");
@@ -16,7 +16,7 @@ function App() {
       setBanglaText(spoken);
 
       // Translate
-      const res = await fetch("http://localhost:5000/translate", {
+      const res = await fetch(`${API_URL}/translate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: spoken }),
