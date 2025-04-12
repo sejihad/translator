@@ -5,7 +5,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: "",
+    origin: "https://translator-ui-ten.vercel.app",
   })
 );
 app.use(express.json());
@@ -21,6 +21,8 @@ app.post("/translate", async (req, res) => {
   const data = await response.json();
   res.json({ translatedText: data.responseData.translatedText });
 });
-
+app.post("/", (req, res) => {
+  res.send("server is running");
+});
 const PORT = 5000;
 app.listen(PORT, () => console.log("Server running on port", PORT));
