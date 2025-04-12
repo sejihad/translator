@@ -6,57 +6,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>বাংলা থেকে ইংরেজি ভয়েস অনুবাদ</title>
-    <!-- Favicons -->
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <!-- External CSS (optional) -->
-    <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
-    <header>
-        <h1>🎤 বাংলা বলুন → ইংরেজি ভয়েস শুনুন</h1>
-    </header>
+    <h2>🎤 বাংলা বলুন → ইংরেজি ভয়েস শুনুন</h2>
+    <button onclick="startListening()">🎙️ কথা বলুন</button>
+    <button onclick="playEnglishVoice()" id="playButton" disabled>▶️ ইংরেজি শুনুন</button>
 
-    <main>
-        <button onclick="startListening()">🎙️ কথা বলুন</button>
-        <p id="banglaText"></p>
-        <p id="englishText"></p>
-    </main>
-
-    <footer>
-        <p>© 2025 Translator App</p>
-    </footer>
-
-    <!-- External JS (optional) -->
-    <script src="script.js"></script>
+    <p id="banglaText"></p>
+    <p id="englishText"></p>
 
     <script>
-        // JavaScript Code Here
         const banglaText = document.getElementById('banglaText');
         const englishText = document.getElementById('englishText');
-        let voicePlaying = false;
+        const playButton = document.getElementById('playButton');
+        let translatedText = "";
 
+        // Function to speak the translated English text
         function speak(text) {
-            if (voicePlaying) return;
-            voicePlaying = true;
             const utter = new SpeechSynthesisUtterance(text);
             utter.lang = "en-US";
-
-            speechSynthesis.onvoiceschanged = () => {
-                const voices = speechSynthesis.getVoices();
-                if (voices.length > 0) {
-                    utter.voice = voices.find(voice => voice.lang.includes("en"));
-                }
-                speechSynthesis.speak(utter);
-            };
-
-            utter.onend = () => {
-                voicePlaying = false;
-            };
-
             speechSynthesis.speak(utter);
         }
 
+        // Function to start listening to speech input
         function startListening() {
             const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
             recognition.lang = 'bn-BD';
@@ -83,9 +56,11 @@
                     });
 
                     const data = await response.json();
-                    englishText.innerText = "🗣️ ইংরেজি: " + data.translatedText;
+                    translatedText = data.translatedText;
+                    englishText.innerText = "🗣️ ইংরেজি: " + translatedText;
 
-                    speak(data.translatedText);
+                    // Enable the play button to hear the translated voice
+                    playButton.disabled = false;
                 } catch (err) {
                     englishText.innerText = "❌ অনুবাদে সমস্যা হয়েছে";
                     console.error(err);
@@ -95,6 +70,13 @@
             recognition.onerror = function (err) {
                 alert("❌ স্পিচ এরর: " + err.error);
             };
+        }
+
+        // Function to play the translated English voice
+        function playEnglishVoice() {
+            if (translatedText) {
+                speak(translatedText);
+            }
         }
     </script>
 </body>
