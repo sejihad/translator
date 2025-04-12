@@ -1,34 +1,57 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bangla to English Voice Translator</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>বাংলা থেকে ইংরেজি ভয়েস অনুবাদ</title>
+    <!-- Favicons -->
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <!-- External CSS (optional) -->
+    <link rel="stylesheet" href="styles.css">
 </head>
 
-
 <body>
-    <h2>🎤 বাংলা বলুন → ইংরেজি ভয়েস শুনুন</h2>
-    <button onclick="startListening()">🎙️ কথা বলুন</button>
-    <p id="banglaText"></p>
-    <p id="englishText"></p>
+    <header>
+        <h1>🎤 বাংলা বলুন → ইংরেজি ভয়েস শুনুন</h1>
+    </header>
+
+    <main>
+        <button onclick="startListening()">🎙️ কথা বলুন</button>
+        <p id="banglaText"></p>
+        <p id="englishText"></p>
+    </main>
+
+    <footer>
+        <p>© 2025 Translator App</p>
+    </footer>
+
+    <!-- External JS (optional) -->
+    <script src="script.js"></script>
 
     <script>
+        // JavaScript Code Here
         const banglaText = document.getElementById('banglaText');
         const englishText = document.getElementById('englishText');
+        let voicePlaying = false;
 
         function speak(text) {
+            if (voicePlaying) return;
+            voicePlaying = true;
             const utter = new SpeechSynthesisUtterance(text);
             utter.lang = "en-US";
 
-            // ভয়েস লোড চেক
             speechSynthesis.onvoiceschanged = () => {
                 const voices = speechSynthesis.getVoices();
                 if (voices.length > 0) {
                     utter.voice = voices.find(voice => voice.lang.includes("en"));
                 }
                 speechSynthesis.speak(utter);
+            };
+
+            utter.onend = () => {
+                voicePlaying = false;
             };
 
             speechSynthesis.speak(utter);
@@ -38,6 +61,10 @@
             const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
             recognition.lang = 'bn-BD';
             recognition.start();
+
+            recognition.onstart = function () {
+                console.log("🎤 শুনছি...");
+            };
 
             recognition.onresult = async function (event) {
                 const transcript = event.results[0][0].transcript;
@@ -58,9 +85,7 @@
                     const data = await response.json();
                     englishText.innerText = "🗣️ ইংরেজি: " + data.translatedText;
 
-                    // ইংরেজি ভয়েস আউটপুট
                     speak(data.translatedText);
-
                 } catch (err) {
                     englishText.innerText = "❌ অনুবাদে সমস্যা হয়েছে";
                     console.error(err);
