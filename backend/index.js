@@ -6,7 +6,7 @@ import fetch from "node-fetch";
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.post("/", (req, res) => {
+app.get("/", (req, res) => {
   res.send("server is running ");
 });
 app.post("/translate", async (req, res) => {
