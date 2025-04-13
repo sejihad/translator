@@ -1,6 +1,5 @@
-// App.jsx
 import { useState } from "react";
-const API_URL = "https://translator-api-nine.vercel.app";
+
 function App() {
   const [banglaText, setBanglaText] = useState("");
   const [englishText, setEnglishText] = useState("");
@@ -9,38 +8,47 @@ function App() {
     const recognition = new (window.SpeechRecognition ||
       window.webkitSpeechRecognition)();
     recognition.lang = "bn-BD";
+    recognition.interimResults = false;
     recognition.start();
 
     recognition.onresult = async (event) => {
-      const spoken = event.results[0][0].transcript;
-      setBanglaText(spoken);
+      const spokenText = event.results[0][0].transcript;
+      setBanglaText(spokenText);
 
-      // Translate
-      const res = await fetch(`${API_URL}/translate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: spoken }),
-      });
-      const data = await res.json();
-      setEnglishText(data.translatedText);
+      try {
+        const res = await fetch(
+          `https://translator-api-nine.vercel.app/translate`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text: spokenText }),
+          }
+        );
+        const data = await res.json();
+        setEnglishText(data.translatedText);
+      } catch (err) {
+        console.error("Translation error:", err);
+      }
     };
   };
 
   const playVoice = () => {
-    const utter = new SpeechSynthesisUtterance(englishText);
-    utter.lang = "en-US";
-    window.speechSynthesis.speak(utter);
+    if (!englishText) return;
+    const utterance = new SpeechSynthesisUtterance(englishText);
+    utterance.lang = "en-US";
+    window.speechSynthesis.speak(utterance);
   };
 
   return (
-    <div style={{ padding: "20px", fontFamily: "sans-serif" }}>
-      <h2>🎤 বাংলা ➝ ইংরেজি ভয়েস ট্রান্সলেটর</h2>
-      <button onClick={startListening}>🎙️ কথা বলুন</button>
+    <div style={{ padding: 20 }}>
+      <h2>বাংলা ➝ ইংরেজি ভয়েস ট্রান্সলেটর</h2>
+      <button onClick={startListening}>🎤 কথা বলুন</button>
       <button onClick={playVoice} disabled={!englishText}>
         ▶️ ইংরেজি শুনুন
       </button>
-      <p>বাংলা: {banglaText}</p>
-      <p>ইংরেজি: {englishText}</p>
+
+      <p>বাংলা টেক্সট: {banglaText}</p>
+      <p>ইংরেজি অনুবাদ: {englishText}</p>
     </div>
   );
 }
