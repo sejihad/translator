@@ -8,7 +8,11 @@ import {
   FaHome,
   FaVideo,
 } from "react-icons/fa";
-
+export const metadata = {
+  title: "Dashboard | ZoomX",
+  description:
+    "Your personal dashboard for meetings, chat, scheduler and more.",
+};
 export default function DashboardLayout({ children }) {
   return (
     <div className="min-h-screen bg-gray-100">
@@ -16,7 +20,9 @@ export default function DashboardLayout({ children }) {
       <header className="bg-white shadow-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           {/* Logo */}
-          <div className="text-xl font-bold text-indigo-600">ZoomX</div>
+          <Link href="/dashboard" className="text-xl font-bold text-indigo-600">
+            ZoomX
+          </Link>
 
           {/* Center Nav Icons */}
           <nav className="hidden md:flex space-x-6 text-gray-600">
@@ -48,7 +54,7 @@ export default function DashboardLayout({ children }) {
       </header>
 
       {/* 👇 Main Content */}
-      <main className="p-6">{children}</main>
+      <main>{children}</main>
 
       {/* 🧑‍💻 Mobile Navbar */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-gray-200 md:hidden">
